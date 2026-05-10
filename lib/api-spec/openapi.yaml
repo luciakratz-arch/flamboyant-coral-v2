@@ -1,0 +1,1787 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Coral Flamboyant management API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: members
+    description: Choir member operations
+  - name: songs
+    description: Song and repertoire operations
+  - name: events
+    description: Agenda and event operations
+  - name: announcements
+    description: Announcement operations
+  - name: dashboard
+    description: Dashboard summary operations
+  - name: settings
+    description: Coral branding and settings
+  - name: study-materials
+    description: Study room materials (videos, PDFs, vocalises, texts, photos)
+  - name: access-logs
+    description: Corista app access tracking
+  - name: blog
+    description: Blog posts and photo gallery
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /members:
+    get:
+      operationId: listMembers
+      tags: [members]
+      summary: List all choir members
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, all]
+            default: all
+        - name: role
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Member"
+    post:
+      operationId: createMember
+      tags: [members]
+      summary: Create a new choir member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMemberBody"
+      responses:
+        "201":
+          description: Member created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+
+  /members/stats:
+    get:
+      operationId: getMemberStats
+      tags: [members]
+      summary: Get member statistics
+      responses:
+        "200":
+          description: Member stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberStats"
+
+  /members/{id}:
+    get:
+      operationId: getMember
+      tags: [members]
+      summary: Get a member by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Member found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMember
+      tags: [members]
+      summary: Update a member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMemberBody"
+      responses:
+        "200":
+          description: Member updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Member"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteMember
+      tags: [members]
+      summary: Delete a member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /songs:
+    get:
+      operationId: listSongs
+      tags: [songs]
+      summary: List all songs
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of songs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Song"
+    post:
+      operationId: createSong
+      tags: [songs]
+      summary: Add a new song
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSongBody"
+      responses:
+        "201":
+          description: Song created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+
+  /songs/{id}:
+    get:
+      operationId: getSong
+      tags: [songs]
+      summary: Get a song by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Song found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSong
+      tags: [songs]
+      summary: Update a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSongBody"
+      responses:
+        "200":
+          description: Song updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Song"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteSong
+      tags: [songs]
+      summary: Delete a song
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /songs/categories:
+    get:
+      operationId: getSongCategories
+      tags: [songs]
+      summary: Get songs grouped by category with counts
+      responses:
+        "200":
+          description: Songs by category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SongCategoryGroup"
+
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List events
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: integer
+        - name: year
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a new event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEventBody"
+      responses:
+        "201":
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+  /events/upcoming:
+    get:
+      operationId: getUpcomingEvents
+      tags: [events]
+      summary: Get upcoming events (next 30 days)
+      responses:
+        "200":
+          description: Upcoming events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /events/{id}:
+    get:
+      operationId: getEvent
+      tags: [events]
+      summary: Get an event by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateEventBody"
+      responses:
+        "200":
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /events/{id}/setlist:
+    get:
+      operationId: getEventSetlist
+      tags: [events]
+      summary: Get setlist songs for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Setlist songs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Song"
+    put:
+      operationId: updateEventSetlist
+      tags: [events]
+      summary: Replace the setlist for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSetlistBody"
+      responses:
+        "200":
+          description: Setlist updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Song"
+
+  /events/{id}/attendances:
+    get:
+      operationId: listEventAttendances
+      tags: [events]
+      summary: List attendances for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Attendance list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EventAttendance"
+    post:
+      operationId: upsertEventAttendance
+      tags: [events]
+      summary: Confirm or decline attendance for an event
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertAttendanceBody"
+      responses:
+        "200":
+          description: Attendance upserted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventAttendance"
+
+  /announcements:
+    get:
+      operationId: listAnnouncements
+      tags: [announcements]
+      summary: List all announcements
+      responses:
+        "200":
+          description: List of announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Announcement"
+    post:
+      operationId: createAnnouncement
+      tags: [announcements]
+      summary: Create an announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnnouncementBody"
+      responses:
+        "201":
+          description: Announcement created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+
+  /announcements/{id}:
+    patch:
+      operationId: updateAnnouncement
+      tags: [announcements]
+      summary: Update an announcement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAnnouncementBody"
+      responses:
+        "200":
+          description: Announcement updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteAnnouncement
+      tags: [announcements]
+      summary: Delete an announcement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard summary data
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+
+  /blog:
+    get:
+      operationId: listBlogPosts
+      tags: [blog]
+      summary: List all blog posts
+      responses:
+        "200":
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BlogPost"
+    post:
+      operationId: createBlogPost
+      tags: [blog]
+      summary: Create a blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBlogPostBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+
+  /blog/{id}:
+    get:
+      operationId: getBlogPost
+      tags: [blog]
+      summary: Get a blog post by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Blog post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+    patch:
+      operationId: updateBlogPost
+      tags: [blog]
+      summary: Update a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBlogPostBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogPost"
+    delete:
+      operationId: deleteBlogPost
+      tags: [blog]
+      summary: Delete a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get coral branding settings (logo and signature)
+      responses:
+        "200":
+          description: Settings object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoralSettings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update coral branding settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsBody"
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CoralSettings"
+
+  /study-materials:
+    get:
+      operationId: listStudyMaterials
+      tags: [study-materials]
+      summary: List all study materials
+      responses:
+        "200":
+          description: List of study materials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StudyMaterial"
+    post:
+      operationId: createStudyMaterial
+      tags: [study-materials]
+      summary: Create a study material
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudyMaterialBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyMaterial"
+
+  /study-materials/{id}:
+    patch:
+      operationId: updateStudyMaterial
+      tags: [study-materials]
+      summary: Update a study material
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStudyMaterialBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudyMaterial"
+    delete:
+      operationId: deleteStudyMaterial
+      tags: [study-materials]
+      summary: Delete a study material
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /access-logs:
+    post:
+      operationId: createAccessLog
+      tags: [access-logs]
+      summary: Record a corista app access
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccessLogBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessLog"
+    get:
+      operationId: listAccessLogs
+      tags: [access-logs]
+      summary: List recent access log entries
+      responses:
+        "200":
+          description: List of access logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccessLog"
+
+  /attendance/sessions:
+    post:
+      operationId: createAttendanceSession
+      tags: [attendance]
+      summary: Create a QR attendance session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAttendanceSessionBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+
+  /attendance/sessions/event/{eventId}:
+    get:
+      operationId: getAttendanceSessionsByEvent
+      tags: [attendance]
+      summary: List QR sessions for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceSession"
+
+  /attendance/sessions/token/{token}:
+    get:
+      operationId: getAttendanceSessionByToken
+      tags: [attendance]
+      summary: Get a QR session by token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceSession"
+
+  /attendance/sessions/{id}:
+    delete:
+      operationId: deleteAttendanceSession
+      tags: [attendance]
+      summary: Delete a QR session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /attendance/checkin:
+    post:
+      operationId: checkinAttendance
+      tags: [attendance]
+      summary: Register a corista check-in via QR token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckinBody"
+      responses:
+        "201":
+          description: Checked in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttendanceRecord"
+
+  /attendance/records/session/{sessionId}:
+    get:
+      operationId: getAttendanceRecordsBySession
+      tags: [attendance]
+      summary: List check-in records for a session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRecord"
+
+  /attendance/records/event/{eventId}:
+    get:
+      operationId: getAttendanceRecordsByEvent
+      tags: [attendance]
+      summary: List all check-in records for an event
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AttendanceRecord"
+
+  /access-logs/summary:
+    get:
+      operationId: getAccessLogsSummary
+      tags: [access-logs]
+      summary: Access frequency summary per corista
+      responses:
+        "200":
+          description: Summary per member
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccessLogSummary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        voicePart:
+          type: ["string", "null"]
+        role:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        cpf:
+          type: ["string", "null"]
+        rg:
+          type: ["string", "null"]
+        birthday:
+          type: ["string", "null"]
+        startDate:
+          type: string
+        endDate:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, inactive]
+        profilePhoto:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - name
+        - startDate
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateMemberBody:
+      type: object
+      properties:
+        name:
+          type: string
+        voicePart:
+          type: ["string", "null"]
+        role:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        cpf:
+          type: ["string", "null"]
+        rg:
+          type: ["string", "null"]
+        birthday:
+          type: ["string", "null"]
+        startDate:
+          type: string
+        endDate:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, inactive]
+          default: active
+        profilePhoto:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - name
+        - startDate
+
+    UpdateMemberBody:
+      type: object
+      properties:
+        name:
+          type: string
+        voicePart:
+          type: ["string", "null"]
+        role:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        cpf:
+          type: ["string", "null"]
+        rg:
+          type: ["string", "null"]
+        birthday:
+          type: ["string", "null"]
+        startDate:
+          type: string
+        endDate:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, inactive]
+        profilePhoto:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    MemberStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        active:
+          type: integer
+        inactive:
+          type: integer
+        birthdays:
+          type: array
+          items:
+            $ref: "#/components/schemas/BirthdayInfo"
+      required:
+        - total
+        - active
+        - inactive
+        - birthdays
+
+    BirthdayInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        birthday:
+          type: string
+      required:
+        - id
+        - name
+        - birthday
+
+    Song:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        composer:
+          type: ["string", "null"]
+        lyrics:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        sheetMusicUrl:
+          type: ["string", "null"]
+        audioOriginalUrl:
+          type: ["string", "null"]
+        audioArranjoUrl:
+          type: ["string", "null"]
+        playbackUrl:
+          type: ["string", "null"]
+        sopranoUrl:
+          type: ["string", "null"]
+        mezzoUrl:
+          type: ["string", "null"]
+        contraltoUrl:
+          type: ["string", "null"]
+        tenorUrl:
+          type: ["string", "null"]
+        baritonoUrl:
+          type: ["string", "null"]
+        baixoUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - category
+        - createdAt
+        - updatedAt
+
+    CreateSongBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        composer:
+          type: ["string", "null"]
+        lyrics:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        sheetMusicUrl:
+          type: ["string", "null"]
+        audioOriginalUrl:
+          type: ["string", "null"]
+        audioArranjoUrl:
+          type: ["string", "null"]
+        playbackUrl:
+          type: ["string", "null"]
+        sopranoUrl:
+          type: ["string", "null"]
+        mezzoUrl:
+          type: ["string", "null"]
+        contraltoUrl:
+          type: ["string", "null"]
+        tenorUrl:
+          type: ["string", "null"]
+        baritonoUrl:
+          type: ["string", "null"]
+        baixoUrl:
+          type: ["string", "null"]
+      required:
+        - title
+        - category
+
+    UpdateSongBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        composer:
+          type: ["string", "null"]
+        lyrics:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        sheetMusicUrl:
+          type: ["string", "null"]
+        audioOriginalUrl:
+          type: ["string", "null"]
+        audioArranjoUrl:
+          type: ["string", "null"]
+        playbackUrl:
+          type: ["string", "null"]
+        sopranoUrl:
+          type: ["string", "null"]
+        mezzoUrl:
+          type: ["string", "null"]
+        contraltoUrl:
+          type: ["string", "null"]
+        tenorUrl:
+          type: ["string", "null"]
+        baritonoUrl:
+          type: ["string", "null"]
+        baixoUrl:
+          type: ["string", "null"]
+
+    SongCategoryGroup:
+      type: object
+      properties:
+        category:
+          type: string
+        count:
+          type: integer
+        songs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+      required:
+        - category
+        - count
+        - songs
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        date:
+          type: string
+        type:
+          type: string
+          enum: [ensaio, apresentacao, reuniao, outro]
+        status:
+          type: string
+          enum: [confirmado, cancelado, feriado, reagendado, suspenso]
+        arrivalTime:
+          type: ["string", "null"]
+        presentationTime:
+          type: ["string", "null"]
+        outfit:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        mapsUrl:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        planningStatus:
+          type: string
+          enum: [planejada, confirmada]
+        recurrenceGroupId:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - date
+        - type
+        - status
+        - planningStatus
+        - createdAt
+        - updatedAt
+
+    CreateEventBody:
+      type: object
+      properties:
+        title:
+          type: string
+        date:
+          type: string
+        type:
+          type: string
+          enum: [ensaio, apresentacao, reuniao, outro]
+        status:
+          type: string
+          enum: [confirmado, cancelado, feriado, reagendado, suspenso]
+          default: confirmado
+        arrivalTime:
+          type: ["string", "null"]
+        presentationTime:
+          type: ["string", "null"]
+        outfit:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        mapsUrl:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        planningStatus:
+          type: string
+          enum: [planejada, confirmada]
+          default: planejada
+        recurrenceGroupId:
+          type: ["string", "null"]
+      required:
+        - title
+        - date
+        - type
+
+    UpdateEventBody:
+      type: object
+      properties:
+        title:
+          type: string
+        date:
+          type: string
+        type:
+          type: string
+          enum: [ensaio, apresentacao, reuniao, outro]
+        status:
+          type: string
+          enum: [confirmado, cancelado, feriado, reagendado, suspenso]
+        arrivalTime:
+          type: ["string", "null"]
+        presentationTime:
+          type: ["string", "null"]
+        outfit:
+          type: ["string", "null"]
+        location:
+          type: ["string", "null"]
+        mapsUrl:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        planningStatus:
+          type: string
+          enum: [planejada, confirmada]
+        recurrenceGroupId:
+          type: ["string", "null"]
+        updateFuture:
+          type: boolean
+          description: If true, update all future events in the same recurrence group (date >= this event's date)
+
+    UpdateSetlistBody:
+      type: object
+      properties:
+        songIds:
+          type: array
+          items:
+            type: integer
+      required:
+        - songIds
+
+    EventAttendance:
+      type: object
+      properties:
+        id:
+          type: integer
+        eventId:
+          type: integer
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        status:
+          type: string
+          enum: [confirmed, declined]
+        updatedAt:
+          type: string
+      required:
+        - id
+        - eventId
+        - memberId
+        - memberName
+        - status
+        - updatedAt
+
+    UpsertAttendanceBody:
+      type: object
+      properties:
+        memberId:
+          type: integer
+        status:
+          type: string
+          enum: [confirmed, declined]
+      required:
+        - memberId
+        - status
+
+    Announcement:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          type: string
+          enum: [normal, high]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - content
+        - priority
+        - createdAt
+        - updatedAt
+
+    CreateAnnouncementBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          type: string
+          enum: [normal, high]
+          default: normal
+      required:
+        - title
+        - content
+
+    UpdateAnnouncementBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        priority:
+          type: string
+          enum: [normal, high]
+
+    Dashboard:
+      type: object
+      properties:
+        totalMembers:
+          type: integer
+        activeMembers:
+          type: integer
+        totalSongs:
+          type: integer
+        totalEvents:
+          type: integer
+        upcomingEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        recentAnnouncements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Announcement"
+        songsByCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongCategoryGroup"
+        birthdaysThisMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/BirthdayInfo"
+      required:
+        - totalMembers
+        - activeMembers
+        - totalSongs
+        - totalEvents
+        - upcomingEvents
+        - recentAnnouncements
+        - songsByCategory
+        - birthdaysThisMonth
+
+    CoralSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+        logoData:
+          type: ["string", "null"]
+        signatureData:
+          type: ["string", "null"]
+        coralName:
+          type: ["string", "null"]
+        conductorName:
+          type: ["string", "null"]
+        producerName:
+          type: ["string", "null"]
+        primaryColor:
+          type: ["string", "null"]
+        secondaryColor:
+          type: ["string", "null"]
+        rhName:
+          type: ["string", "null"]
+        rhPassword:
+          type: ["string", "null"]
+        adminPassword:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+      required:
+        - id
+        - updatedAt
+
+    UpdateSettingsBody:
+      type: object
+      properties:
+        logoData:
+          type: ["string", "null"]
+        signatureData:
+          type: ["string", "null"]
+        coralName:
+          type: ["string", "null"]
+        conductorName:
+          type: ["string", "null"]
+        producerName:
+          type: ["string", "null"]
+        primaryColor:
+          type: ["string", "null"]
+        secondaryColor:
+          type: ["string", "null"]
+        rhName:
+          type: ["string", "null"]
+        rhPassword:
+          type: ["string", "null"]
+        adminPassword:
+          type: ["string", "null"]
+
+    BlogPost:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        imageData:
+          type: ["string", "null"]
+        eventId:
+          type: ["integer", "null"]
+        authorRole:
+          type: string
+        youtubeUrl:
+          type: ["string", "null"]
+        instagramUrl:
+          type: ["string", "null"]
+        externalUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - content
+        - authorRole
+        - createdAt
+        - updatedAt
+
+    CreateBlogPostBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        imageData:
+          type: ["string", "null"]
+        eventId:
+          type: ["integer", "null"]
+        authorRole:
+          type: string
+        youtubeUrl:
+          type: ["string", "null"]
+        instagramUrl:
+          type: ["string", "null"]
+        externalUrl:
+          type: ["string", "null"]
+      required:
+        - title
+        - content
+
+    UpdateBlogPostBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        imageData:
+          type: ["string", "null"]
+        eventId:
+          type: ["integer", "null"]
+        youtubeUrl:
+          type: ["string", "null"]
+        instagramUrl:
+          type: ["string", "null"]
+        externalUrl:
+          type: ["string", "null"]
+
+    StudyMaterial:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        category:
+          type: string
+        mediaType:
+          type: string
+        url:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - category
+        - mediaType
+        - createdAt
+        - updatedAt
+
+    CreateStudyMaterialBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        mediaType:
+          type: string
+        url:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+      required:
+        - title
+        - category
+        - mediaType
+
+    UpdateStudyMaterialBody:
+      type: object
+      properties:
+        title:
+          type: string
+        category:
+          type: string
+        mediaType:
+          type: string
+        url:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+
+    AccessLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        accessedAt:
+          type: string
+      required:
+        - id
+        - memberId
+        - memberName
+        - accessedAt
+
+    AccessLogSummary:
+      type: object
+      properties:
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        total:
+          type: integer
+        last30Days:
+          type: integer
+        lastAccess:
+          type: ["string", "null"]
+      required:
+        - memberId
+        - memberName
+        - total
+        - last30Days
+        - lastAccess
+
+    AttendanceSession:
+      type: object
+      properties:
+        id:
+          type: integer
+        eventId:
+          type: integer
+        token:
+          type: string
+        durationMinutes:
+          type: integer
+        expiresAt:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - eventId
+        - token
+        - durationMinutes
+        - expiresAt
+        - createdAt
+
+    CreateAttendanceSessionBody:
+      type: object
+      properties:
+        eventId:
+          type: integer
+        durationMinutes:
+          type: integer
+      required:
+        - eventId
+
+    AttendanceRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: integer
+        eventId:
+          type: integer
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        voicePart:
+          type: ["string", "null"]
+        checkedInAt:
+          type: string
+      required:
+        - id
+        - sessionId
+        - eventId
+        - memberId
+        - memberName
+        - voicePart
+        - checkedInAt
+
+    CheckinBody:
+      type: object
+      properties:
+        token:
+          type: string
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        voicePart:
+          type: ["string", "null"]
+      required:
+        - token
+        - memberId
+        - memberName
+
+    CreateAccessLogBody:
+      type: object
+      properties:
+        memberId:
+          type: integer
+        memberName:
+          type: string
+      required:
+        - memberId
+        - memberName
