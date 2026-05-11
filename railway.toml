@@ -1,0 +1,6 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install -g pnpm && pnpm install --shamefully-hoist && pnpm --filter api-server run build"
+
+[deploy]
+startCommand = "node artifacts/api-server/dist/index.mjs"
